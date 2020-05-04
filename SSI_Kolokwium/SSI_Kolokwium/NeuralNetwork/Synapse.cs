@@ -23,7 +23,7 @@ namespace SSI_Kolokwium.NeuralNetwork
 
         public void UpdateWeight(double learnRate, double delta)
         {
-            Weight += delta;
+            Weight += learnRate * delta;
         }
     }
 }

@@ -9,13 +9,11 @@ namespace SSI_Kolokwium.NeuralNetwork
     public class Network
     {
         public double LearningRate { get; set; }
-        public int[] NumberOfNeurons { get; set; }
 
         public List<Layer> Layers { get; set; }
 
         public Network(double learningRate, IActivationFunction activationFunction, params int[] numberOfNeurons)
         {
-            NumberOfNeurons = numberOfNeurons;
             LearningRate = learningRate;
             Layers = new List<Layer>();
             //numberOfNeurons[] - how many layers there should be and how many neurons each layer should have
@@ -39,10 +37,13 @@ namespace SSI_Kolokwium.NeuralNetwork
             {
                 for (int j = 0; j < inputValues.Length; j++)
                 {
+                    //Calculate values for inputs
                     double[] outputs = Calculate(inputValues[j]);
 
+                    //Calculate errors for each synapse
                     CalculateErrors(outputs, expectedValues[j]);
 
+                    //Update weights using errors
                     UpdateWeights();
                 }
             }
@@ -50,6 +51,7 @@ namespace SSI_Kolokwium.NeuralNetwork
 
         public double[] Calculate(double[] input)
         {
+            //Push input values into network
             PushInputValues(input);
 
             //We gather calculated values from last layer neurons to array
@@ -71,6 +73,7 @@ namespace SSI_Kolokwium.NeuralNetwork
                 control[i] = Enumerable.Repeat(0d, 10).ToArray();
                 double[] output = Calculate(testInput[i]);
                 control[i][Array.IndexOf(output, output.Max())] = 1;
+                //If calculated value is equal to expected value we add 1 to accuracy
                 if (Array.IndexOf(control[i], control[i].Max()) == Array.IndexOf(testExpected[i], testExpected[i].Max()))
                 {
                     accuracy++;
@@ -121,12 +124,14 @@ namespace SSI_Kolokwium.NeuralNetwork
 
         private void CalculateErrors(double[] outputs, double[] expectedValues)
         {
+            //Calculate errors for last layers
             for (int i = 0; i < outputs.Length; i++)
             {
                 Neuron currentNeuron = Layers.Last().Neurons[i];
                 currentNeuron.Gradient = currentNeuron.ActivationFunction.Derivative(currentNeuron.InputValue) * (expectedValues[i] - outputs[i]);
             }
 
+            //Calculate errors for other layers based on errors from next layer
             for (int i = Layers.Count - 2; i > 0; i--)
             {
                 for (int j = 0; j < Layers[i].Neurons.Count; j++)

@@ -4,24 +4,25 @@ namespace SSI_Kolokwium
 {
     static class Knn
     {
-        public static string Classify(double[] unknown, double[][] trainData, int numClasses, int k)
+        public static string Classify(double[] input, double[][] trainData, int numClasses, int k)
         {
-            int n = trainData.Length;
+            IndexAndDistance[] info = new IndexAndDistance[trainData.Length];
 
-            IndexAndDistance[] info = new IndexAndDistance[n];
-
-            for (int i = 0; i < n; i++)
+            //Calculate distance for each element in trainData array and input
+            for (int i = 0; i < trainData.Length; i++)
             {
                 IndexAndDistance curr = new IndexAndDistance();
-                double dist = Distance(unknown, trainData[i]);
+                double dist = Distance(input, trainData[i]);
                 curr.idx = i;
                 curr.dist = dist;
                 info[i] = curr;
             }
 
+            //Sort distances
             Array.Sort(info);
 
-            for (int i = 0; i < k; ++i)
+            //Display k nearest elements to input
+            for (int i = 0; i < k; i++)
             {
                 string c = trainData[info[i].idx][trainData[0].Length - 1] == 1 ? "Seed 3" : (trainData[info[i].idx][trainData[0].Length - 2] == 1 ? "Seed 2" : "Seed 1");
                 double dist = info[i].dist;
@@ -33,21 +34,22 @@ namespace SSI_Kolokwium
                     Console.Write("{0:0.000}, ", trainData[info[i].idx][j]);
                 }
 
-                Console.Write("{0:0.000}) Distance: {1:0.000} Class: {2}", trainData[info[i].idx][trainData[info[i].idx].Length - 4], Math.Round(dist, 3), c);
+                Console.Write("{0:0.000}) Distance: {1:0.000} Class: {2}", trainData[info[i].idx][trainData[info[i].idx].Length - 4], dist, c);
                 Console.WriteLine();
             }
 
+            //Get most possible class of input data
             string result = Vote(info, trainData, numClasses, k);
 
             return result;
         }
 
-        private static double Distance(double[] unknown, double[] data)
+        private static double Distance(double[] input, double[] data)
         {
             double sum = 0;
 
-            for (int i = 0; i < unknown.Length; i++)
-                sum += Math.Abs(unknown[i] - data[i]);
+            for (int i = 0; i < input.Length; i++)
+                sum += Math.Abs(input[i] - data[i]);
 
             return sum;
         }
@@ -56,6 +58,7 @@ namespace SSI_Kolokwium
         {
             int[] votes = new int[numClasses];
 
+            //Count how many times each class occurs in k nearest elements
             for (int i = 0; i < k; i++)
             {
                 int idx = info[i].idx;
@@ -77,7 +80,9 @@ namespace SSI_Kolokwium
 
             return classWithMostVotes;
         }
+        
 
+        //We need distance and index of each element cuz we will be sorting elements by distance but still need to locate elements in input array
         private class IndexAndDistance : IComparable
         {
             public int idx;
